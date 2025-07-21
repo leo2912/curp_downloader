@@ -14,6 +14,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, WebDriverException
 import time
+import fitz  # PyMuPDF for PDF processing
 
 class CURPExtractorApp:
     def __init__(self, root):
@@ -50,7 +51,7 @@ class CURPExtractorApp:
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
         
         # Upload button
-        upload_btn = ttk.Button(main_frame, text="Upload Images", command=self.upload_images)
+        upload_btn = ttk.Button(main_frame, text="Upload Files (Images & PDFs)", command=self.upload_files)
         upload_btn.grid(row=1, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
         
         # Progress bar
@@ -142,7 +143,7 @@ class CURPExtractorApp:
         
         # Instructions label
         instructions = ("Instructions:\n"
-                       "1. Click 'Upload Images' to select multiple image files\n"
+                       "1. Click 'Upload Files' to select images (JPG, PNG, etc.) or PDF files\n"
                        "2. The app will extract 18-character CURP codes after 'Clave:'\n"
                        "3. View results in the table below\n"
                        "4. Use checkboxes to select CURPs, or right-click for individual actions\n"
@@ -152,24 +153,30 @@ class CURPExtractorApp:
                                      foreground="gray", justify=tk.LEFT)
         instructions_label.grid(row=4, column=0, columnspan=3, pady=(20, 0), sticky=tk.W)
         
-    def upload_images(self):
-        """Handle image upload and processing"""
+    def upload_files(self):
+        """Handle file upload (both images and PDFs)"""
         file_paths = filedialog.askopenfilenames(
-            title="Select Images",
+            title="Select Files",
             filetypes=[
+                ("All supported", "*.jpg *.jpeg *.png *.bmp *.tiff *.gif *.pdf"),
                 ("Image files", "*.jpg *.jpeg *.png *.bmp *.tiff *.gif"),
+                ("PDF files", "*.pdf"),
                 ("All files", "*.*")
             ]
         )
         
         if file_paths:
-            # Process images in a separate thread to avoid blocking the UI
-            threading.Thread(target=self.process_images, args=(file_paths,), daemon=True).start()
+            # Process files in a separate thread to avoid blocking the UI
+            threading.Thread(target=self.process_files, args=(file_paths,), daemon=True).start()
     
-    def process_images(self, file_paths):
-        """Process images and extract CURPs"""
+    def upload_images(self):
+        """Handle image upload (kept for backward compatibility)"""
+        self.upload_files()
+    
+    def process_files(self, file_paths):
+        """Process files (both images and PDFs) and extract CURPs"""
         self.root.after(0, lambda: self.progress.start())
-        self.root.after(0, lambda: self.status_label.config(text="Processing images..."))
+        self.root.after(0, lambda: self.status_label.config(text="Processing files..."))
         
         for i, file_path in enumerate(file_paths):
             try:
@@ -177,8 +184,15 @@ class CURPExtractorApp:
                 filename = os.path.basename(file_path)
                 self.root.after(0, lambda f=filename: self.status_label.config(text=f"Processing: {f}"))
                 
-                # Extract CURP from image
-                curp = self.extract_curp_from_image(file_path)
+                # Check file type
+                file_extension = os.path.splitext(file_path)[1].lower()
+                
+                if file_extension == '.pdf':
+                    # Process PDF file
+                    curp = self.extract_curp_from_pdf(file_path)
+                else:
+                    # Process image file
+                    curp = self.extract_curp_from_image(file_path)
                 
                 if curp:
                     # Add to results
@@ -196,6 +210,10 @@ class CURPExtractorApp:
         self.root.after(0, lambda: self.progress.stop())
         self.root.after(0, lambda: self.status_label.config(text=f"Completed. Found {len([c for c in self.extracted_curps if c])} CURPs"))
     
+    def process_images(self, file_paths):
+        """Process images and extract CURPs (kept for backward compatibility)"""
+        self.process_files(file_paths)
+    
     def extract_curp_from_image(self, image_path):
         """Extract CURP code from image using OCR"""
         try:
@@ -209,22 +227,68 @@ class CURPExtractorApp:
             # Perform OCR
             text = pytesseract.image_to_string(image, lang='spa+eng')
             
-            # Search for CURP pattern after "Clave:"
-            # Look for "Clave:" followed by optional whitespace and then exactly 18 alphanumeric characters
-            pattern = r'Clave:\s*([A-Z0-9]{18})'
-            match = re.search(pattern, text, re.IGNORECASE)
+            # Search for CURP in the extracted text
+            return self.find_curp_in_text(text)
+    
+    def extract_curp_from_pdf(self, pdf_path):
+        """Extract CURP code from PDF using OCR"""
+        try:
+            # Open PDF document
+            pdf_document = fitz.open(pdf_path)
             
-            if match:
-                return match.group(1).upper()
-            
-            # Alternative pattern - sometimes OCR might not capture the colon correctly
-            pattern2 = r'Clave\s*([A-Z0-9]{18})'
-            match2 = re.search(pattern2, text, re.IGNORECASE)
-            
-            if match2:
-                return match2.group(1).upper()
+            # Process each page of the PDF
+            for page_num in range(len(pdf_document)):
+                page = pdf_document[page_num]
                 
+                # First, try to extract text directly from PDF
+                text = page.get_text()
+                curp = self.find_curp_in_text(text)
+                if curp:
+                    pdf_document.close()
+                    return curp
+                
+                # If direct text extraction doesn't work, convert page to image and use OCR
+                # Get page as image (PNG format)
+                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x zoom for better OCR
+                img_data = pix.tobytes("png")
+                
+                # Convert to PIL Image
+                from io import BytesIO
+                image = Image.open(BytesIO(img_data))
+                
+                # Perform OCR on the image
+                ocr_text = pytesseract.image_to_string(image, lang='spa+eng')
+                curp = self.find_curp_in_text(ocr_text)
+                
+                if curp:
+                    pdf_document.close()
+                    return curp
+            
+            pdf_document.close()
             return None
+            
+        except Exception as e:
+            print(f"Error processing PDF {pdf_path}: {e}")
+            return None
+    
+    def find_curp_in_text(self, text):
+        """Find CURP pattern in text"""
+        # Search for CURP pattern after "Clave:"
+        # Look for "Clave:" followed by optional whitespace and then exactly 18 alphanumeric characters
+        pattern = r'Clave:\s*([A-Z0-9]{18})'
+        match = re.search(pattern, text, re.IGNORECASE)
+        
+        if match:
+            return match.group(1).upper()
+        
+        # Alternative pattern - sometimes OCR might not capture the colon correctly
+        pattern2 = r'Clave\s*([A-Z0-9]{18})'
+        match2 = re.search(pattern2, text, re.IGNORECASE)
+        
+        if match2:
+            return match2.group(1).upper()
+            
+        return None
             
         except Exception as e:
             print(f"Error processing image {image_path}: {e}")
@@ -567,6 +631,15 @@ def main():
         print("- macOS: brew install tesseract")
         print("- Linux: sudo apt install tesseract-ocr")
         return
+    
+    # Check if PyMuPDF is installed
+    try:
+        import fitz
+    except ImportError:
+        print("Warning: PyMuPDF (fitz) not found.")
+        print("PDF processing will not work without PyMuPDF.")
+        print("Install with: pip install PyMuPDF")
+        print("\nThe app will still work for image processing without PDF support.")
     
     # Check if ChromeDriver is available
     try:
