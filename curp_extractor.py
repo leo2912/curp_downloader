@@ -13,6 +13,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 import time
 import fitz  # PyMuPDF for PDF processing
 
@@ -229,6 +231,10 @@ class CURPExtractorApp:
             
             # Search for CURP in the extracted text
             return self.find_curp_in_text(text)
+        
+        except Exception as e:
+            print(f"Error extracting CURP {image_path}: {e}")
+            return None
     
     def extract_curp_from_pdf(self, pdf_path):
         """Extract CURP code from PDF using OCR"""
@@ -275,6 +281,7 @@ class CURPExtractorApp:
         """Find CURP pattern in text"""
         # Search for CURP pattern after "Clave:"
         # Look for "Clave:" followed by optional whitespace and then exactly 18 alphanumeric characters
+        
         pattern = r'Clave:\s*([A-Z0-9]{18})'
         match = re.search(pattern, text, re.IGNORECASE)
         
@@ -290,9 +297,9 @@ class CURPExtractorApp:
             
         return None
             
-        except Exception as e:
-            print(f"Error processing image {image_path}: {e}")
-            return None
+        # except Exception as e:
+        #     print(f"Error processing image {image_path}: {e}")
+        #     return None
     
     def add_result(self, filename, curp, status):
         """Add result to the treeview"""
@@ -363,7 +370,7 @@ class CURPExtractorApp:
         """Handle treeview click events for checkbox functionality"""
         region = self.tree.identify_region(event.x, event.y)
         if region == "cell":
-            column = self.tree.identify_column(event.x, event.y)
+            column = self.tree.identify_column(event.x)
             if column == "#1":  # Select column
                 item = self.tree.identify_row(event.y)
                 if item:
@@ -502,7 +509,8 @@ class CURPExtractorApp:
             chrome_options.add_experimental_option("prefs", prefs)
             
             # Initialize WebDriver
-            self.driver = webdriver.Chrome(options=chrome_options)
+            #self.driver = webdriver.Chrome(options=chrome_options)
+            self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
             return self.driver
             
         except Exception as e:
@@ -622,6 +630,7 @@ class CURPExtractorApp:
 
 def main():
     # Check if Tesseract is installed
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     try:
         pytesseract.get_tesseract_version()
     except Exception as e:
@@ -647,7 +656,8 @@ def main():
         options = Options()
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
-        test_driver = webdriver.Chrome(options=options)
+        #test_driver = webdriver.Chrome(options=options)
+        test_driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         test_driver.quit()
     except Exception as e:
         print("Warning: ChromeDriver not found or not working properly.")
