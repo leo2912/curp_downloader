@@ -630,9 +630,15 @@ class CURPExtractorApp:
 
 def main():
     # Check if Tesseract is installed
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+    if os.name == 'nt':
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    # else:
+    #     pytesseract.pytesseract.tesseract_cmd = r'/home/.steamos/offload/var/lib/flatpak/app/io.github.manisandro.gImageReader/x86_64/stable/c9b91dfdb62d702811ea4e4e83e523e0e2db18b69001a26c3bc6ed25218a0829/files/bin/tesseract'
+    
     try:
         pytesseract.get_tesseract_version()
+    
     except Exception as e:
         print("Error: Tesseract OCR is not installed or not found.")
         print("Please install Tesseract OCR:")
