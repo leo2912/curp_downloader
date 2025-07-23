@@ -22,7 +22,7 @@ class CURPExtractorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("CURP Extractor - Mexican Identity Document Processor")
-        self.root.geometry("800x600")
+        self.root.geometry("900x700")
         
         # Store extracted CURPs
         self.extracted_curps = []
@@ -46,27 +46,87 @@ class CURPExtractorApp:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         main_frame.columnconfigure(1, weight=1)
-        main_frame.rowconfigure(2, weight=1)
+        main_frame.rowconfigure(4, weight=1)
         
         # Title
         title_label = ttk.Label(main_frame, text="CURP Extractor", font=("Arial", 16, "bold"))
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
         
         # Upload button
-        upload_btn = ttk.Button(main_frame, text="Upload Files (Images & PDFs)", command=self.upload_files)
-        upload_btn.grid(row=1, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+        #upload_btn = ttk.Button(main_frame, text="Upload Files (Images & PDFs)", command=self.upload_files)
+        #upload_btn.grid(row=1, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
+     
+     # File upload section
+        upload_frame = ttk.LabelFrame(main_frame, text="Upload Files", padding="10")
+        upload_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
+        upload_frame.columnconfigure(1, weight=1)
+        upload_btn = ttk.Button(upload_frame, text="Upload Files (Images & PDFs)", command=self.upload_files)
+        upload_btn.grid(row=0, column=0, padx=(0, 10), sticky=tk.W)
         
         # Progress bar
-        self.progress = ttk.Progressbar(main_frame, mode='indeterminate')
-        self.progress.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 10), pady=(0, 10))
+        # self.progress = ttk.Progressbar(main_frame, mode='indeterminate')
+        # self.progress.grid(row=1, column=1, sticky=(tk.W, tk.E), padx=(0, 10), pady=(0, 10))
+        self.progress = ttk.Progressbar(upload_frame, mode='indeterminate')
+        self.progress.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
         
         # Status label
-        self.status_label = ttk.Label(main_frame, text="Ready to process images")
-        self.status_label.grid(row=1, column=2, pady=(0, 10), sticky=tk.E)
+        self.status_label = ttk.Label(upload_frame, text="Ready to process files")
+        #self.status_label.grid(row=1, column=2, pady=(0, 10), sticky=tk.E)
+        self.status_label.grid(row=0, column=2, sticky=tk.E)
         
+        # Manual input section
+
+        input_frame = ttk.LabelFrame(main_frame, text="Manual CURP Input", padding="10")
+        input_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
+        input_frame.columnconfigure(1, weight=1)
+       
+
+        # CURP input field
+        ttk.Label(input_frame, text="Enter CURP:").grid(row=0, column=0, padx=(0, 10), sticky=tk.W)
+        self.curp_entry = ttk.Entry(input_frame, font=("Courier", 11), width=20)
+        self.curp_entry.grid(row=0, column=1, padx=(0, 10), sticky=(tk.W, tk.E))
+        self.curp_entry.bind('<Return>', self.add_manual_curp)
+        self.curp_entry.bind('<KeyRelease>', self.validate_curp_input)
+
+        
+
+        # Add CURP button
+        self.add_curp_btn = ttk.Button(input_frame, text="Add CURP", command=self.add_manual_curp)
+        self.add_curp_btn.grid(row=0, column=2, padx=(0, 10))
+
+        # Validation label
+        self.validation_label = ttk.Label(input_frame, text="", font=("Arial", 9))
+        self.validation_label.grid(row=1, column=1, sticky=tk.W, pady=(5, 0))
+
+        # Bulk input section
+        bulk_frame = ttk.Frame(input_frame)
+        bulk_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(10, 0))
+        bulk_frame.columnconfigure(0, weight=1)
+        ttk.Label(bulk_frame, text="Bulk input (one CURP per line):").grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
+
+        # Text area for bulk input
+        text_frame = ttk.Frame(bulk_frame)
+        text_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E))
+        text_frame.columnconfigure(0, weight=1)
+        self.bulk_text = tk.Text(text_frame, height=4, width=50, font=("Courier", 10))
+        self.bulk_text.grid(row=0, column=0, sticky=(tk.W, tk.E))
+
+        # Scrollbar for text area
+        bulk_scrollbar = ttk.Scrollbar(text_frame, orient=tk.VERTICAL, command=self.bulk_text.yview)
+        self.bulk_text.configure(yscrollcommand=bulk_scrollbar.set)
+        bulk_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+
+        # Bulk add button
+        bulk_add_btn = ttk.Button(bulk_frame, text="Add All CURPs", command=self.add_bulk_curps)
+        bulk_add_btn.grid(row=2, column=0, pady=(5, 0), sticky=tk.W)
+
+        # Clear bulk button
+        clear_bulk_btn = ttk.Button(bulk_frame, text="Clear Text", command=self.clear_bulk_text)
+        clear_bulk_btn.grid(row=2, column=1, pady=(5, 0), padx=(10, 0), sticky=tk.W)
+
         # Results frame
         results_frame = ttk.LabelFrame(main_frame, text="Extracted CURPs", padding="10")
-        results_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
+        results_frame.grid(row=4, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
         results_frame.columnconfigure(0, weight=1)
         results_frame.rowconfigure(1, weight=1)
         
@@ -87,18 +147,21 @@ class CURPExtractorApp:
         download_selected_btn.pack(side=tk.LEFT)
         
         # Treeview for results
-        columns = ('Select', 'File', 'CURP', 'Status')
-        self.tree = ttk.Treeview(results_frame, columns=columns, show='headings', height=15)
+        #columns = ('Select', 'File', 'CURP', 'Status')
+        columns = ('Select', 'Source', 'CURP', 'Status')
+        self.tree = ttk.Treeview(results_frame, columns=columns, show='headings', height=12)
         
         # Define headings
         self.tree.heading('Select', text='☐')
-        self.tree.heading('File', text='File Name')
+        #self.tree.heading('File', text='File Name')
+        self.tree.heading('Source', text='Source')
         self.tree.heading('CURP', text='CURP Code')
         self.tree.heading('Status', text='Status')
         
         # Configure column widths
         self.tree.column('Select', width=50, minwidth=50)
-        self.tree.column('File', width=200, minwidth=150)
+        self.tree.column('Source', width=200, minwidth=150)
+        #self.tree.column('File', width=200, minwidth=150)
         self.tree.column('CURP', width=200, minwidth=180)
         self.tree.column('Status', width=100, minwidth=80)
         
@@ -122,10 +185,11 @@ class CURPExtractorApp:
         self.context_menu.add_separator()
         self.context_menu.add_command(label="Copy CURP", command=self.copy_single_curp)
         self.context_menu.add_command(label="Toggle Selection", command=self.toggle_single_selection)
-        
+        self.context_menu.add_command(label="Remove CURP", command=self.remove_single_curp)
+
         # Action buttons frame
         actions_frame = ttk.Frame(main_frame)
-        actions_frame.grid(row=3, column=0, columnspan=3, pady=(10, 0), sticky=(tk.W, tk.E))
+        actions_frame.grid(row=5, column=0, columnspan=3, pady=(10, 0), sticky=(tk.W, tk.E))
         
         # Copy button
         copy_btn = ttk.Button(actions_frame, text="Copy CURPs to Clipboard", command=self.copy_to_clipboard)
@@ -144,16 +208,180 @@ class CURPExtractorApp:
         download_pdfs_btn.pack(side=tk.LEFT)
         
         # Instructions label
+        # instructions = ("Instructions:\n"
+        #                "1. Click 'Upload Files' to select images (JPG, PNG, etc.) or PDF files\n"
+        #                "2. The app will extract 18-character CURP codes after 'Clave:'\n"
+        #                "3. View results in the table below\n"
+        #                "4. Use checkboxes to select CURPs, or right-click for individual actions\n"
+        #                "5. Copy codes to clipboard, download as CSV, or download official PDFs")
+
+        # Instructions label
+
         instructions = ("Instructions:\n"
-                       "1. Click 'Upload Files' to select images (JPG, PNG, etc.) or PDF files\n"
-                       "2. The app will extract 18-character CURP codes after 'Clave:'\n"
-                       "3. View results in the table below\n"
+                       "1. Upload files: Click 'Upload Files' to select images (JPG, PNG, etc.) or PDF files\n"
+                       "2. Manual input: Type CURPs directly in the input field or use bulk input\n"
+                       "3. The app will validate and display all CURPs in the table below\n"
                        "4. Use checkboxes to select CURPs, or right-click for individual actions\n"
                        "5. Copy codes to clipboard, download as CSV, or download official PDFs")
         
         instructions_label = ttk.Label(main_frame, text=instructions, font=("Arial", 9), 
                                      foreground="gray", justify=tk.LEFT)
-        instructions_label.grid(row=4, column=0, columnspan=3, pady=(20, 0), sticky=tk.W)
+        instructions_label.grid(row=6, column=0, columnspan=3, pady=(20, 0), sticky=tk.W)
+    def validate_curp_input(self, event=None):
+        """Validate CURP input in real-time"""
+        curp = self.curp_entry.get().upper()
+        self.curp_entry.delete(0, tk.END)
+        self.curp_entry.insert(0, curp)
+
+        if not curp:
+            self.validation_label.config(text="", foreground="black")
+            return
+  
+        if len(curp) < 18:
+            self.validation_label.config(text=f"Length: {len(curp)}/18 characters", foreground="orange")
+
+        elif len(curp) == 18:
+
+            if self.is_valid_curp_format(curp):
+                self.validation_label.config(text="✓ Valid CURP format", foreground="green")
+
+            else:
+                self.validation_label.config(text="✗ Invalid CURP format", foreground="red")
+
+        else:
+            self.validation_label.config(text="✗ Too long (max 18 characters)", foreground="red")
+
+    def is_valid_curp_format(self, curp):
+        """Validate CURP format using regex"""
+        # Basic CURP format: 4 letters + 6 digits + 1 letter + 5 alphanumeric + 2 digits
+        pattern = r'^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9]{2}$'
+        return bool(re.match(pattern, curp))
+   
+
+    def add_manual_curp(self, event=None):
+        """Add manually entered CURP to results"""
+        curp = self.curp_entry.get().strip().upper()
+  
+        if not curp:
+            messagebox.showwarning("Empty Input", "Please enter a CURP code.")
+            return
+
+        if len(curp) != 18:
+            messagebox.showwarning("Invalid Length", "CURP must be exactly 18 characters long.")
+            return
+
+        if not self.is_valid_curp_format(curp):
+            result = messagebox.askyesno("Invalid Format", 
+                                       f"The CURP '{curp}' doesn't match the standard format.\n\n"
+                                       "Do you want to add it anyway?")
+            if not result:
+                return
+ 
+        # Check if CURP already exists
+        for item in self.tree.get_children():
+            values = self.tree.item(item)['values']
+
+            if len(values) >= 3 and values[2] == curp:
+                messagebox.showwarning("Duplicate CURP", f"CURP '{curp}' already exists in the list.")
+                return
+
+        # Add to results
+        self.add_result("Manual Input", curp, "Added")
+        self.extracted_curps.append(curp)
+  
+        # Clear input field
+        self.curp_entry.delete(0, tk.END)
+        self.validation_label.config(text="")
+  
+        # Show success message
+        self.status_label.config(text=f"Added CURP: {curp}")
+   
+    def add_bulk_curps(self):
+        """Add multiple CURPs from bulk text input"""
+        text = self.bulk_text.get("1.0", tk.END).strip()
+
+        if not text:
+            messagebox.showwarning("Empty Input", "Please enter CURPs in the text area.")
+            return
+
+        # Split by lines and clean up
+        lines = [line.strip().upper() for line in text.split('\n') if line.strip()]
+        added_count = 0
+        skipped_count = 0
+        invalid_count = 0
+
+        for line in lines:
+            # Skip if not 18 characters
+            if len(line) != 18:
+                invalid_count += 1
+                continue
+  
+           # Check if already exists
+            exists = False
+
+            for item in self.tree.get_children():
+                values = self.tree.item(item)['values']
+
+                if len(values) >= 3 and values[2] == line:
+                    exists = True
+                    break
+
+            if exists:
+                skipped_count += 1
+                continue
+           
+            # Add to results
+            status = "Added"
+
+            if not self.is_valid_curp_format(line):
+                status = "Added (Invalid Format)"
+
+            self.add_result("Bulk Input", line, status)
+            self.extracted_curps.append(line)
+            added_count += 1
+  
+        # Show summary
+        summary = f"Bulk import complete:\n"
+        summary += f"Added: {added_count}\n"
+        if skipped_count > 0:
+            summary += f"Skipped (duplicates): {skipped_count}\n"
+
+        if invalid_count > 0:
+            summary += f"Invalid (wrong length): {invalid_count}"
+    
+        messagebox.showinfo("Bulk Import Results", summary)
+        self.status_label.config(text=f"Bulk import: {added_count} CURPs added")
+ 
+    def clear_bulk_text(self):
+        """Clear the bulk input text area"""
+        self.bulk_text.delete("1.0", tk.END)
+
+    def remove_single_curp(self):
+        """Remove the right-clicked CURP from results"""
+        if hasattr(self, 'context_menu_item'):
+            item = self.context_menu_item
+            values = self.tree.item(item)['values']
+
+            if len(values) >= 3:
+                curp = values[2]
+                result = messagebox.askyesno("Confirm Removal", f"Remove CURP '{curp}' from the list?")
+  
+                if result:
+                    # Remove from tree
+                    self.tree.delete(item)
+                    
+                    # Remove from selected items if it was selected
+                    if item in self.selected_items:
+                        self.selected_items.remove(item)
+                    
+                    # Remove from extracted_curps list
+                    try:
+                        self.extracted_curps.remove(curp)
+                    except ValueError:
+                        pass  # CURP not in list
+ 
+                    self.status_label.config(text=f"Removed CURP: {curp}")
+
         
     def upload_files(self):
         """Handle file upload (both images and PDFs)"""
@@ -301,11 +529,11 @@ class CURPExtractorApp:
         #     print(f"Error processing image {image_path}: {e}")
         #     return None
     
-    def add_result(self, filename, curp, status):
+    def add_result(self, source, curp, status):
         """Add result to the treeview"""
         # Add checkbox symbol (unchecked by default)
         checkbox = "☐"
-        item_id = self.tree.insert('', 'end', values=(checkbox, filename, curp, status))
+        item_id = self.tree.insert('', 'end', values=(checkbox, source, curp, status))
         return item_id
     
     def copy_to_clipboard(self):
@@ -345,7 +573,7 @@ class CURPExtractorApp:
                     writer = csv.writer(csvfile)
                     
                     # Write header
-                    writer.writerow(['File Name', 'CURP Code', 'Status'])
+                    writer.writerow(['Source', 'CURP Code', 'Status'])
                     
                     # Write data
                     for item in self.tree.get_children():
@@ -364,7 +592,7 @@ class CURPExtractorApp:
         self.tree.delete(*self.tree.get_children())
         self.extracted_curps.clear()
         self.selected_items.clear()
-        self.status_label.config(text="Ready to process images")
+        self.status_label.config(text="Ready to process files")
     
     def on_treeview_click(self, event):
         """Handle treeview click events for checkbox functionality"""
@@ -382,7 +610,7 @@ class CURPExtractorApp:
         if len(values) >= 4:
             curp = values[2]
             # Only allow selection of valid CURPs
-            if curp and len(str(curp)) == 18 and curp != "Not found":
+            if curp and len(str(curp)) == 18 and curp != "Not found" and not str(curp).startswith("Error:"):
                 if item in self.selected_items:
                     self.selected_items.remove(item)
                     values[0] = "☐"
@@ -397,7 +625,7 @@ class CURPExtractorApp:
             values = list(self.tree.item(item)['values'])
             if len(values) >= 4:
                 curp = values[2]
-                if curp and len(str(curp)) == 18 and curp != "Not found":
+                if curp and len(str(curp)) == 18 and curp != "Not found" and not str(curp).startswith("Error:"):
                     if item not in self.selected_items:
                         self.selected_items.add(item)
                         values[0] = "☑"
@@ -432,7 +660,7 @@ class CURPExtractorApp:
             values = self.tree.item(self.context_menu_item)['values']
             if len(values) >= 4:
                 curp = values[2]
-                if curp and len(str(curp)) == 18 and curp != "Not found":
+                if curp and len(str(curp)) == 18 and curp != "Not found" and not str(curp).startswith("Error:"):
                     # Start download in separate thread
                     threading.Thread(target=self.download_pdfs_worker, args=([curp],), daemon=True).start()
                 else:
