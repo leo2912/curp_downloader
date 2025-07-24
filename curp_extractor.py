@@ -21,7 +21,7 @@ import fitz  # PyMuPDF for PDF processing
 class CURPExtractorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("CURP Extractor - Mexican Identity Document Processor")
+        self.root.title("Extractor y Descargador de CURPs")
         self.root.geometry("900x700")
         
         # Store extracted CURPs
@@ -49,7 +49,7 @@ class CURPExtractorApp:
         main_frame.rowconfigure(4, weight=1)
         
         # Title
-        title_label = ttk.Label(main_frame, text="CURP Extractor", font=("Arial", 16, "bold"))
+        title_label = ttk.Label(main_frame, text="Extractor y Descargador de CURPs", font=("Arial", 16, "bold"))
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
         
         # Upload button
@@ -57,10 +57,10 @@ class CURPExtractorApp:
         #upload_btn.grid(row=1, column=0, padx=(0, 10), pady=(0, 10), sticky=tk.W)
      
      # File upload section
-        upload_frame = ttk.LabelFrame(main_frame, text="Upload Files", padding="10")
+        upload_frame = ttk.LabelFrame(main_frame, text="Subir archivos", padding="10")
         upload_frame.grid(row=1, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
         upload_frame.columnconfigure(1, weight=1)
-        upload_btn = ttk.Button(upload_frame, text="Upload Files (Images & PDFs)", command=self.upload_files)
+        upload_btn = ttk.Button(upload_frame, text="Subir archivos (Imágenes & PDFs)", command=self.upload_files)
         upload_btn.grid(row=0, column=0, padx=(0, 10), sticky=tk.W)
         
         # Progress bar
@@ -70,19 +70,19 @@ class CURPExtractorApp:
         self.progress.grid(row=0, column=1, sticky=(tk.W, tk.E), padx=(0, 10))
         
         # Status label
-        self.status_label = ttk.Label(upload_frame, text="Ready to process files")
+        self.status_label = ttk.Label(upload_frame, text="Preparado para procesar archivos")
         #self.status_label.grid(row=1, column=2, pady=(0, 10), sticky=tk.E)
         self.status_label.grid(row=0, column=2, sticky=tk.E)
         
         # Manual input section
 
-        input_frame = ttk.LabelFrame(main_frame, text="Manual CURP Input", padding="10")
+        input_frame = ttk.LabelFrame(main_frame, text="Entrada manual de CURPs", padding="10")
         input_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
         input_frame.columnconfigure(1, weight=1)
        
 
         # CURP input field
-        ttk.Label(input_frame, text="Enter CURP:").grid(row=0, column=0, padx=(0, 10), sticky=tk.W)
+        ttk.Label(input_frame, text="Ingresa CURP:").grid(row=0, column=0, padx=(0, 10), sticky=tk.W)
         self.curp_entry = ttk.Entry(input_frame, font=("Courier", 11), width=20)
         self.curp_entry.grid(row=0, column=1, padx=(0, 10), sticky=(tk.W, tk.E))
         self.curp_entry.bind('<Return>', self.add_manual_curp)
@@ -91,7 +91,7 @@ class CURPExtractorApp:
         
 
         # Add CURP button
-        self.add_curp_btn = ttk.Button(input_frame, text="Add CURP", command=self.add_manual_curp)
+        self.add_curp_btn = ttk.Button(input_frame, text="Agrega CURP", command=self.add_manual_curp)
         self.add_curp_btn.grid(row=0, column=2, padx=(0, 10))
 
         # Validation label
@@ -102,7 +102,7 @@ class CURPExtractorApp:
         bulk_frame = ttk.Frame(input_frame)
         bulk_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(10, 0))
         bulk_frame.columnconfigure(0, weight=1)
-        ttk.Label(bulk_frame, text="Bulk input (one CURP per line):").grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
+        ttk.Label(bulk_frame, text="Múltiples CURPs (Una CURP por línea):").grid(row=0, column=0, sticky=tk.W, pady=(0, 5))
 
         # Text area for bulk input
         text_frame = ttk.Frame(bulk_frame)
@@ -117,15 +117,15 @@ class CURPExtractorApp:
         bulk_scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
 
         # Bulk add button
-        bulk_add_btn = ttk.Button(bulk_frame, text="Add All CURPs", command=self.add_bulk_curps)
+        bulk_add_btn = ttk.Button(bulk_frame, text="Agregar todas las CURPs", command=self.add_bulk_curps)
         bulk_add_btn.grid(row=2, column=0, pady=(5, 0), sticky=tk.W)
 
         # Clear bulk button
-        clear_bulk_btn = ttk.Button(bulk_frame, text="Clear Text", command=self.clear_bulk_text)
+        clear_bulk_btn = ttk.Button(bulk_frame, text="Borrar", command=self.clear_bulk_text)
         clear_bulk_btn.grid(row=2, column=1, pady=(5, 0), padx=(10, 0), sticky=tk.W)
 
         # Results frame
-        results_frame = ttk.LabelFrame(main_frame, text="Extracted CURPs", padding="10")
+        results_frame = ttk.LabelFrame(main_frame, text="CURPs Extraídas", padding="10")
         results_frame.grid(row=4, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(10, 0))
         results_frame.columnconfigure(0, weight=1)
         results_frame.rowconfigure(1, weight=1)
@@ -135,35 +135,35 @@ class CURPExtractorApp:
         selection_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 5))
         
         # Select all/none buttons
-        select_all_btn = ttk.Button(selection_frame, text="Select All", command=self.select_all_items)
+        select_all_btn = ttk.Button(selection_frame, text="Seleccionar todo", command=self.select_all_items)
         select_all_btn.pack(side=tk.LEFT, padx=(0, 5))
         
-        select_none_btn = ttk.Button(selection_frame, text="Select None", command=self.select_none_items)
+        select_none_btn = ttk.Button(selection_frame, text="Deseleccionar Todo", command=self.select_none_items)
         select_none_btn.pack(side=tk.LEFT, padx=(0, 10))
         
         # Download selected button
-        download_selected_btn = ttk.Button(selection_frame, text="Download Selected PDFs", 
+        download_selected_btn = ttk.Button(selection_frame, text="Descargar PDFs seleccionados", 
                                          command=self.download_selected_pdfs)
         download_selected_btn.pack(side=tk.LEFT)
         
         # Treeview for results
         #columns = ('Select', 'File', 'CURP', 'Status')
-        columns = ('Select', 'Source', 'CURP', 'Status')
+        columns = ('Seleccionar', 'Origen', 'CURP', 'Estatus')
         self.tree = ttk.Treeview(results_frame, columns=columns, show='headings', height=12)
         
         # Define headings
-        self.tree.heading('Select', text='☐')
+        self.tree.heading('Seleccionar', text='☐')
         #self.tree.heading('File', text='File Name')
-        self.tree.heading('Source', text='Source')
-        self.tree.heading('CURP', text='CURP Code')
-        self.tree.heading('Status', text='Status')
+        self.tree.heading('Origen', text='Origen')
+        self.tree.heading('CURP', text='CURP')
+        self.tree.heading('Estatus', text='Estatus')
         
         # Configure column widths
-        self.tree.column('Select', width=50, minwidth=50)
-        self.tree.column('Source', width=200, minwidth=150)
+        self.tree.column('Seleccionar', width=50, minwidth=50)
+        self.tree.column('Origen', width=200, minwidth=150)
         #self.tree.column('File', width=200, minwidth=150)
         self.tree.column('CURP', width=200, minwidth=180)
-        self.tree.column('Status', width=100, minwidth=80)
+        self.tree.column('Estatus', width=100, minwidth=80)
         
         # Bind events for checkbox functionality and right-click menu
         self.tree.bind('<Button-1>', self.on_treeview_click)
@@ -181,30 +181,30 @@ class CURPExtractorApp:
         
         # Create context menu
         self.context_menu = tk.Menu(self.root, tearoff=0)
-        self.context_menu.add_command(label="Download This CURP PDF", command=self.download_single_selected)
+        self.context_menu.add_command(label="Descargar el PDF de esta CURP", command=self.download_single_selected)
         self.context_menu.add_separator()
-        self.context_menu.add_command(label="Copy CURP", command=self.copy_single_curp)
-        self.context_menu.add_command(label="Toggle Selection", command=self.toggle_single_selection)
-        self.context_menu.add_command(label="Remove CURP", command=self.remove_single_curp)
+        self.context_menu.add_command(label="Copiar CURP", command=self.copy_single_curp)
+        self.context_menu.add_command(label="Alternar Selección", command=self.toggle_single_selection)
+        self.context_menu.add_command(label="Quitar CURP", command=self.remove_single_curp)
 
         # Action buttons frame
         actions_frame = ttk.Frame(main_frame)
         actions_frame.grid(row=5, column=0, columnspan=3, pady=(10, 0), sticky=(tk.W, tk.E))
         
         # Copy button
-        copy_btn = ttk.Button(actions_frame, text="Copy CURPs to Clipboard", command=self.copy_to_clipboard)
+        copy_btn = ttk.Button(actions_frame, text="Copiar CURPs", command=self.copy_to_clipboard)
         copy_btn.pack(side=tk.LEFT, padx=(0, 10))
         
         # Download CSV button
-        download_btn = ttk.Button(actions_frame, text="Download as CSV", command=self.download_csv)
+        download_btn = ttk.Button(actions_frame, text="Descargar como CSV", command=self.download_csv)
         download_btn.pack(side=tk.LEFT, padx=(0, 10))
         
         # Clear button
-        clear_btn = ttk.Button(actions_frame, text="Clear Results", command=self.clear_results)
+        clear_btn = ttk.Button(actions_frame, text="Limpiar", command=self.clear_results)
         clear_btn.pack(side=tk.LEFT, padx=(0, 10))
         
         # Download PDFs button
-        download_pdfs_btn = ttk.Button(actions_frame, text="Download CURP PDFs", command=self.download_curp_pdfs)
+        download_pdfs_btn = ttk.Button(actions_frame, text="Descargar CURP PDFs", command=self.download_curp_pdfs)
         download_pdfs_btn.pack(side=tk.LEFT)
         
         # Instructions label
@@ -238,18 +238,18 @@ class CURPExtractorApp:
             return
   
         if len(curp) < 18:
-            self.validation_label.config(text=f"Length: {len(curp)}/18 characters", foreground="orange")
+            self.validation_label.config(text=f"Longitud: {len(curp)}/18 caracteres", foreground="orange")
 
         elif len(curp) == 18:
 
             if self.is_valid_curp_format(curp):
-                self.validation_label.config(text="✓ Valid CURP format", foreground="green")
+                self.validation_label.config(text="✓ Formato Valido CURP", foreground="green")
 
             else:
-                self.validation_label.config(text="✗ Invalid CURP format", foreground="red")
+                self.validation_label.config(text="✗ Formato Invalido CURP", foreground="red")
 
         else:
-            self.validation_label.config(text="✗ Too long (max 18 characters)", foreground="red")
+            self.validation_label.config(text="✗ CURP Incorrecta (no tiene 18 caracteres)", foreground="red")
 
     def is_valid_curp_format(self, curp):
         """Validate CURP format using regex"""
@@ -263,17 +263,17 @@ class CURPExtractorApp:
         curp = self.curp_entry.get().strip().upper()
   
         if not curp:
-            messagebox.showwarning("Empty Input", "Please enter a CURP code.")
+            messagebox.showwarning("Campo vacío", "Escribe una CURP.")
             return
 
         if len(curp) != 18:
-            messagebox.showwarning("Invalid Length", "CURP must be exactly 18 characters long.")
+            messagebox.showwarning("CURP Incorrecta", "LA CURP debe tener 18 caracteres.")
             return
 
         if not self.is_valid_curp_format(curp):
-            result = messagebox.askyesno("Invalid Format", 
-                                       f"The CURP '{curp}' doesn't match the standard format.\n\n"
-                                       "Do you want to add it anyway?")
+            result = messagebox.askyesno("Formato Inválido", 
+                                       f"La CURP '{curp}' no cumple por el formato estándar.\n\n"
+                                       "¿Quieres agregarla de todas formas?")
             if not result:
                 return
  
@@ -282,11 +282,11 @@ class CURPExtractorApp:
             values = self.tree.item(item)['values']
 
             if len(values) >= 3 and values[2] == curp:
-                messagebox.showwarning("Duplicate CURP", f"CURP '{curp}' already exists in the list.")
+                messagebox.showwarning("CURP Duplicada", f"CURP '{curp}' existente.")
                 return
 
         # Add to results
-        self.add_result("Manual Input", curp, "Added")
+        self.add_result("Ingreso manual", curp, "agregada")
         self.extracted_curps.append(curp)
   
         # Clear input field
@@ -294,14 +294,14 @@ class CURPExtractorApp:
         self.validation_label.config(text="")
   
         # Show success message
-        self.status_label.config(text=f"Added CURP: {curp}")
+        self.status_label.config(text=f"CURP agregada: {curp}")
    
     def add_bulk_curps(self):
         """Add multiple CURPs from bulk text input"""
         text = self.bulk_text.get("1.0", tk.END).strip()
 
         if not text:
-            messagebox.showwarning("Empty Input", "Please enter CURPs in the text area.")
+            messagebox.showwarning("Campo vacío", "Por favor escribe las CURPs en el cuadro de texto.")
             return
 
         # Split by lines and clean up
@@ -334,23 +334,23 @@ class CURPExtractorApp:
             status = "Added"
 
             if not self.is_valid_curp_format(line):
-                status = "Added (Invalid Format)"
+                status = "Agregada (Formato Invalido)"
 
             self.add_result("Bulk Input", line, status)
             self.extracted_curps.append(line)
             added_count += 1
   
         # Show summary
-        summary = f"Bulk import complete:\n"
-        summary += f"Added: {added_count}\n"
+        summary = f"Importación masiva completada:\n"
+        summary += f"CURPs agregadas: {added_count}\n"
         if skipped_count > 0:
-            summary += f"Skipped (duplicates): {skipped_count}\n"
+            summary += f"CURPs duplicadas no agregadas: {skipped_count}\n"
 
         if invalid_count > 0:
-            summary += f"Invalid (wrong length): {invalid_count}"
+            summary += f"CURPs invalidas (no tienen 18 caracteres): {invalid_count}"
     
-        messagebox.showinfo("Bulk Import Results", summary)
-        self.status_label.config(text=f"Bulk import: {added_count} CURPs added")
+        messagebox.showinfo("Resultados importación masiva", summary)
+        self.status_label.config(text=f"Importación masiva: {added_count} fueron agregadas CURPs")
  
     def clear_bulk_text(self):
         """Clear the bulk input text area"""
@@ -364,7 +364,7 @@ class CURPExtractorApp:
 
             if len(values) >= 3:
                 curp = values[2]
-                result = messagebox.askyesno("Confirm Removal", f"Remove CURP '{curp}' from the list?")
+                result = messagebox.askyesno("Confirmar eliminación", f"¿Quieres quitar la '{curp}' de la lista?")
   
                 if result:
                     # Remove from tree
@@ -380,7 +380,7 @@ class CURPExtractorApp:
                     except ValueError:
                         pass  # CURP not in list
  
-                    self.status_label.config(text=f"Removed CURP: {curp}")
+                    self.status_label.config(text=f"CURP eliminada: {curp}")
 
         
     def upload_files(self):
@@ -388,10 +388,10 @@ class CURPExtractorApp:
         file_paths = filedialog.askopenfilenames(
             title="Select Files",
             filetypes=[
-                ("All supported", "*.jpg *.jpeg *.png *.bmp *.tiff *.gif *.pdf"),
-                ("Image files", "*.jpg *.jpeg *.png *.bmp *.tiff *.gif"),
-                ("PDF files", "*.pdf"),
-                ("All files", "*.*")
+                ("Archivos compatibles", "*.jpg *.jpeg *.png *.bmp *.tiff *.gif *.pdf"),
+                ("Imágenes", "*.jpg *.jpeg *.png *.bmp *.tiff *.gif"),
+                ("PDFs", "*.pdf"),
+                ("Todos los archivos", "*.*")
             ]
         )
         
@@ -406,13 +406,13 @@ class CURPExtractorApp:
     def process_files(self, file_paths):
         """Process files (both images and PDFs) and extract CURPs"""
         self.root.after(0, lambda: self.progress.start())
-        self.root.after(0, lambda: self.status_label.config(text="Processing files..."))
+        self.root.after(0, lambda: self.status_label.config(text="Procesando archivos..."))
         
         for i, file_path in enumerate(file_paths):
             try:
                 # Update status
                 filename = os.path.basename(file_path)
-                self.root.after(0, lambda f=filename: self.status_label.config(text=f"Processing: {f}"))
+                self.root.after(0, lambda f=filename: self.status_label.config(text=f"Procesando: {f}"))
                 
                 # Check file type
                 file_extension = os.path.splitext(file_path)[1].lower()
@@ -426,10 +426,10 @@ class CURPExtractorApp:
                 
                 if curp:
                     # Add to results
-                    self.root.after(0, lambda f=filename, c=curp: self.add_result(f, c, "Success"))
+                    self.root.after(0, lambda f=filename, c=curp: self.add_result(f, c, "Éxito"))
                     self.extracted_curps.append(curp)
                 else:
-                    self.root.after(0, lambda f=filename: self.add_result(f, "Not found", "Failed"))
+                    self.root.after(0, lambda f=filename: self.add_result(f, "Falla", "CURP no encontrada"))
                     self.extracted_curps.append(None)
                     
             except Exception as e:
@@ -438,7 +438,7 @@ class CURPExtractorApp:
                 self.root.after(0, lambda f=filename, err=error_msg: self.add_result(f, f"Error: {err}", "Error"))
         
         self.root.after(0, lambda: self.progress.stop())
-        self.root.after(0, lambda: self.status_label.config(text=f"Completed. Found {len([c for c in self.extracted_curps if c])} CURPs"))
+        self.root.after(0, lambda: self.status_label.config(text=f"Extracción completa. Se encontrarón {len([c for c in self.extracted_curps if c])} CURPs"))
     
     def process_images(self, file_paths):
         """Process images and extract CURPs (kept for backward compatibility)"""
@@ -502,7 +502,7 @@ class CURPExtractorApp:
             return None
             
         except Exception as e:
-            print(f"Error processing PDF {pdf_path}: {e}")
+            print(f"Error procesando PDF {pdf_path}: {e}")
             return None
     
     def find_curp_in_text(self, text):
@@ -541,7 +541,7 @@ class CURPExtractorApp:
         valid_curps = [curp for curp in self.extracted_curps if curp and len(curp) == 18]
         
         if not valid_curps:
-            messagebox.showwarning("No CURPs", "No valid CURPs found to copy.")
+            messagebox.showwarning("No CURPs", "No se encontraron CURPs validas.")
             return
         
         # Join CURPs with newlines
@@ -552,19 +552,19 @@ class CURPExtractorApp:
         self.root.clipboard_append(curps_text)
         self.root.update()  # Ensure clipboard is updated
         
-        messagebox.showinfo("Copied", f"Copied {len(valid_curps)} CURP codes to clipboard!")
+        messagebox.showinfo("Copiadas", f"Se copiaron {len(valid_curps)} CURPs en el portapapeles!")
     
     def download_csv(self):
         """Download results as CSV file"""
         if not self.tree.get_children():
-            messagebox.showwarning("No Data", "No data to download.")
+            messagebox.showwarning("No Datos", "No hay datos para descargar.")
             return
         
         # Ask user for save location
         file_path = filedialog.asksaveasfilename(
             defaultextension=".csv",
-            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-            title="Save CSV file"
+            filetypes=[("Archivo CSV", "*.csv"), ("Todos los archivos", "*.*")],
+            title="Guardar archivo CSV"
         )
         
         if file_path:
@@ -573,7 +573,7 @@ class CURPExtractorApp:
                     writer = csv.writer(csvfile)
                     
                     # Write header
-                    writer.writerow(['Source', 'CURP Code', 'Status'])
+                    writer.writerow(['Origen', 'CURP', 'Estatus'])
                     
                     # Write data
                     for item in self.tree.get_children():
@@ -582,17 +582,17 @@ class CURPExtractorApp:
                         if len(values) >= 4:
                             writer.writerow([values[1], values[2], values[3]])
                 
-                messagebox.showinfo("Success", f"CSV file saved successfully!\n{file_path}")
+                messagebox.showinfo("Éxito", f"Archivo CSV file guardado.\n{file_path}")
                 
             except Exception as e:
-                messagebox.showerror("Error", f"Failed to save CSV file:\n{e}")
+                messagebox.showerror("Error", f"No se pudo guardar archivo CSV:\n{e}")
     
     def clear_results(self):
         """Clear all results"""
         self.tree.delete(*self.tree.get_children())
         self.extracted_curps.clear()
         self.selected_items.clear()
-        self.status_label.config(text="Ready to process files")
+        self.status_label.config(text="Preparado para procesar archivos")
     
     def on_treeview_click(self, event):
         """Handle treeview click events for checkbox functionality"""
@@ -664,7 +664,7 @@ class CURPExtractorApp:
                     # Start download in separate thread
                     threading.Thread(target=self.download_pdfs_worker, args=([curp],), daemon=True).start()
                 else:
-                    messagebox.showwarning("Invalid CURP", "Cannot download PDF for invalid CURP.")
+                    messagebox.showwarning("CURP invalida", "No se pueden descargar PDFs de CURPs invalidas.")
     
     def copy_single_curp(self):
         """Copy the right-clicked CURP to clipboard"""
@@ -676,7 +676,7 @@ class CURPExtractorApp:
                     self.root.clipboard_clear()
                     self.root.clipboard_append(str(curp))
                     self.root.update()
-                    messagebox.showinfo("Copied", f"CURP '{curp}' copied to clipboard!")
+                    messagebox.showinfo("Copiada", f"CURP '{curp}' copiada al portapapeles.")
     
     def toggle_single_selection(self):
         """Toggle selection of the right-clicked item"""
@@ -686,7 +686,7 @@ class CURPExtractorApp:
     def download_selected_pdfs(self):
         """Download PDFs for selected CURPs only"""
         if not self.selected_items:
-            messagebox.showwarning("No Selection", "Please select CURPs to download using the checkboxes.")
+            messagebox.showwarning("Sin selección", "Por favor, marca con palomita las CURPS que quieras descargar.")
             return
         
         # Get CURPs from selected items
@@ -699,14 +699,14 @@ class CURPExtractorApp:
                     selected_curps.append(curp)
         
         if not selected_curps:
-            messagebox.showwarning("No Valid CURPs", "No valid CURPs selected for download.")
+            messagebox.showwarning("No hay CURPs validas", "No se seleccionardon CURPs validas para descargar.")
             return
         
         # Confirm action
         result = messagebox.askyesno(
-            "Confirm Download", 
-            f"This will download {len(selected_curps)} selected CURP validation PDFs from gob.mx.\n\n"
-            "This process may take several minutes. Continue?"
+            "Confirmación de Descarga", 
+            f"Se descargaran {len(selected_curps)} CURPs de la página oficial.\n\n"
+            "Este proceso puede tardar varios minutos. ¿Quieres continuar?"
         )
         
         if result:
@@ -717,7 +717,7 @@ class CURPExtractorApp:
         """Setup Chrome WebDriver with download preferences"""
         try:
             # Ask user for download folder
-            self.download_folder = filedialog.askdirectory(title="Select folder to save CURP PDFs")
+            self.download_folder = filedialog.askdirectory(title="Selecciona carpeta para guardar los CURPs en PDF.")
             if not self.download_folder:
                 return None
             
@@ -742,7 +742,7 @@ class CURPExtractorApp:
             return self.driver
             
         except Exception as e:
-            messagebox.showerror("WebDriver Error", f"Failed to setup WebDriver:\n{e}\n\nMake sure ChromeDriver is installed.")
+            messagebox.showerror("Error en el WebDriver", f"No fue posible iniciar el WebDriver:\n{e}\n\nRevisa que el WebDriver está instalado.")
             return None
     
     def download_curp_pdfs(self):
@@ -750,14 +750,14 @@ class CURPExtractorApp:
         valid_curps = [curp for curp in self.extracted_curps if curp and len(curp) == 18]
         
         if not valid_curps:
-            messagebox.showwarning("No CURPs", "No valid CURPs found to download.")
+            messagebox.showwarning("No CURPs", "No se encontraron CURPs validas para descargar.")
             return
         
         # Confirm action
         result = messagebox.askyesno(
-            "Confirm Download", 
-            f"This will download {len(valid_curps)} CURP validation PDFs from gob.mx.\n\n"
-            "This process may take several minutes. Continue?"
+            "Confirmación de Descarga", 
+            f"Se descargaran {len(valid_curps)} CURPs de la página oficial.\n\n"
+            "Este proceso puede tardar varios minutos. ¿Quieres continuar?"
         )
         
         if not result:
@@ -769,12 +769,12 @@ class CURPExtractorApp:
     def download_pdfs_worker(self, curps):
         """Worker function to download PDFs"""
         self.root.after(0, lambda: self.progress.start())
-        self.root.after(0, lambda: self.status_label.config(text="Setting up browser..."))
+        self.root.after(0, lambda: self.status_label.config(text="Preparando navegador..."))
         
         # Setup WebDriver
         if not self.setup_webdriver():
             self.root.after(0, lambda: self.progress.stop())
-            self.root.after(0, lambda: self.status_label.config(text="Download cancelled"))
+            self.root.after(0, lambda: self.status_label.config(text="Descarga cancelada"))
             return
         
         successful_downloads = 0
@@ -784,7 +784,7 @@ class CURPExtractorApp:
             for i, curp in enumerate(curps):
                 try:
                     self.root.after(0, lambda c=curp, idx=i+1, total=len(curps): 
-                                  self.status_label.config(text=f"Downloading {idx}/{total}: {c}"))
+                                  self.status_label.config(text=f"Descargando {idx}/{total}: {c}"))
                     
                     if self.download_single_curp_pdf(curp):
                         successful_downloads += 1
@@ -795,7 +795,7 @@ class CURPExtractorApp:
                     time.sleep(2)
                     
                 except Exception as e:
-                    print(f"Error downloading CURP {curp}: {e}")
+                    print(f"Error descargando CURP {curp}: {e}")
                     failed_downloads += 1
                     continue
         
@@ -807,14 +807,14 @@ class CURPExtractorApp:
             
             self.root.after(0, lambda: self.progress.stop())
             self.root.after(0, lambda: self.status_label.config(
-                text=f"Downloads complete: {successful_downloads} successful, {failed_downloads} failed"))
+                text=f"Descarga completada: {successful_downloads} exitosas, {failed_downloads} fallida"))
             
             # Show completion message
             self.root.after(0, lambda: messagebox.showinfo(
-                "Download Complete", 
-                f"Downloaded {successful_downloads} CURP PDFs successfully.\n"
+                "Descarga completa", 
+                f"Fueron descargadas {successful_downloads} CURPs en PDF de manera exitosa.\n"
                 f"{failed_downloads} downloads failed.\n\n"
-                f"Files saved to: {self.download_folder}"
+                f"Archivos guardados en: {self.download_folder}"
             ))
     
     def download_single_curp_pdf(self, curp):
@@ -849,11 +849,11 @@ class CURPExtractorApp:
                 return True
                 
             except TimeoutException:
-                print(f"Download button not found for CURP: {curp}")
+                print(f"No se encontró el botón de descarga: {curp}")
                 return False
             
         except Exception as e:
-            print(f"Error processing CURP {curp}: {e}")
+            print(f"Error procesando la CURP {curp}: {e}")
             return False
 
 def main():
@@ -868,9 +868,9 @@ def main():
         pytesseract.get_tesseract_version()
     
     except Exception as e:
-        print("Error: Tesseract OCR is not installed or not found.")
-        print("Please install Tesseract OCR:")
-        print("- Windows: Download from https://github.com/UB-Mannheim/tesseract/wiki")
+        print("Error: Tesseract OCR no está instalado o no se encontró.")
+        print("Por favor, instala Tesseract OCR:")
+        print("- Windows: Descargalo en https://github.com/UB-Mannheim/tesseract/wiki")
         print("- macOS: brew install tesseract")
         print("- Linux: sudo apt install tesseract-ocr")
         return
@@ -879,10 +879,10 @@ def main():
     try:
         import fitz
     except ImportError:
-        print("Warning: PyMuPDF (fitz) not found.")
-        print("PDF processing will not work without PyMuPDF.")
-        print("Install with: pip install PyMuPDF")
-        print("\nThe app will still work for image processing without PDF support.")
+        print("Advertencia: PyMuPDF (fitz) not encontrado.")
+        print("No se pueden procesar PDFs sin PyMuPDF.")
+        print("Instalalo así: pip install PyMuPDF")
+        print("\nTodavía puedes usar la aplicación para procesar CURPs en imágenes.")
     
     # Check if ChromeDriver is available
     try:
@@ -894,12 +894,12 @@ def main():
         test_driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         test_driver.quit()
     except Exception as e:
-        print("Warning: ChromeDriver not found or not working properly.")
-        print("PDF download feature will not work without ChromeDriver.")
-        print("Install ChromeDriver:")
-        print("- Download from https://chromedriver.chromium.org/")
-        print("- Or use: pip install webdriver-manager")
-        print("\nThe app will still work for CURP extraction without PDF download.")
+        print("Advertencia: No se encontró ChromeDriver.")
+        print("No es posible descargar PDFs sin ChromeDriver.")
+        print("Instala ChromeDriver:")
+        print("- Descargalo en https://chromedriver.chromium.org/")
+        print("- O usa: pip install webdriver-manager")
+        print("\nEL programa puede procesar CURPs, más no descargarlas.")
     
     root = tk.Tk()
     app = CURPExtractorApp(root)
