@@ -22,7 +22,9 @@ class CURPExtractorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Extractor y Descargador de CURPs")
-        self.root.geometry("900x700")
+        
+        # Establece un tamaño mínimo para la ventana, permitiendo que sea redimensionable.
+        self.root.minsize(1024, 768)
         
         # Store extracted CURPs
         self.extracted_curps = []
@@ -217,12 +219,12 @@ class CURPExtractorApp:
 
         # Instructions label
 
-        instructions = ("Instructions:\n"
-                       "1. Upload files: Click 'Upload Files' to select images (JPG, PNG, etc.) or PDF files\n"
-                       "2. Manual input: Type CURPs directly in the input field or use bulk input\n"
-                       "3. The app will validate and display all CURPs in the table below\n"
-                       "4. Use checkboxes to select CURPs, or right-click for individual actions\n"
-                       "5. Copy codes to clipboard, download as CSV, or download official PDFs")
+        instructions = ("Instrucciones:\n"
+                       "1. Subir archivos: Haz clic en 'Subir archivos' para seleccionar imágenes (JPG, PNG, etc.) o archivos PDF.\n"
+                       "2. Entrada manual: Escribe las CURPs directamente en el campo de entrada o utiliza la entrada masiva.\n"
+                       "3. La aplicación validará y mostrará todas las CURPs en la tabla de abajo.\n"
+                       "4. Usa las casillas de verificación para seleccionar CURPs, o haz clic derecho para acciones individuales.\n"
+                       "5. Copia los códigos al portapapeles, descarga como CSV o descarga los PDFs oficiales.")
         
         instructions_label = ttk.Label(main_frame, text=instructions, font=("Arial", 9), 
                                      foreground="gray", justify=tk.LEFT)
@@ -252,9 +254,10 @@ class CURPExtractorApp:
             self.validation_label.config(text="✗ CURP Incorrecta (no tiene 18 caracteres)", foreground="red")
 
     def is_valid_curp_format(self, curp):
-        """Validate CURP format using regex"""
-        # Basic CURP format: 4 letters + 6 digits + 1 letter + 5 alphanumeric + 2 digits
-        pattern = r'^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9]{2}$'
+        """Valida el formato de la CURP usando una expresión regular."""
+        # Una CURP tiene 4 letras, 6 dígitos, un carácter de sexo (H/M/X),
+        # 5 letras, una homoclave (letra o dígito) y un dígito verificador final.
+        pattern = r'^[A-Z]{4}[0-9]{6}[HMX][A-Z]{5}[A-Z0-9][0-9]$'
         return bool(re.match(pattern, curp))
    
 
@@ -336,7 +339,7 @@ class CURPExtractorApp:
             if not self.is_valid_curp_format(line):
                 status = "Agregada (Formato Invalido)"
 
-            self.add_result("Bulk Input", line, status)
+            self.add_result("Subida Múltiple", line, status)
             self.extracted_curps.append(line)
             added_count += 1
   
@@ -569,7 +572,8 @@ class CURPExtractorApp:
         
         if file_path:
             try:
-                with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                # Use 'utf-8-sig' to include a BOM for better Excel compatibility
+                with open(file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
                     writer = csv.writer(csvfile)
                     
                     # Write header
@@ -582,7 +586,7 @@ class CURPExtractorApp:
                         if len(values) >= 4:
                             writer.writerow([values[1], values[2], values[3]])
                 
-                messagebox.showinfo("Éxito", f"Archivo CSV file guardado.\n{file_path}")
+                messagebox.showinfo("Éxito", f"Archivo CSV guardado.\n{file_path}")
                 
             except Exception as e:
                 messagebox.showerror("Error", f"No se pudo guardar archivo CSV:\n{e}")
