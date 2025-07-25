@@ -26,6 +26,13 @@ La herramienta permite a los usuarios extraer CURPs desde archivos de imagen (JP
 -   **Tesseract OCR:** El motor de reconocimiento óptico de caracteres.
 -   **Google Chrome:** Necesario para la descarga automatizada de PDFs.
 
+
+## Instalación automática para Windows
+**Instalar Tesseract OCR:**
+    -   **Windows:** Descarga e instala desde la wiki de Tesseract de UB-Mannheim. Asegúrate de que la ruta de instalación (`C:\Program Files\Tesseract-OCR\tesseract.exe`) coincida con la del script o añádela a la variable de entorno `PATH` del sistema.
+    - Descarga y abre el archivo ExtractorCURP.exe
+
+
 ## Instalación desde cero
 
 Sigue estos pasos para configurar el entorno de desarrollo.
