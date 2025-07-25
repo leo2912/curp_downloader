@@ -2,6 +2,7 @@
 
 
 **Autores:** Claude Sonnet y Gemini Assistant
+
 **Editor:** Leonardo González Muñoz
 
 Una aplicación de escritorio con interfaz gráfica (GUI) construida en Python y Tkinter que automatiza la extracción y descarga de Claves Únicas de Registro de Población (CURP) de México.
