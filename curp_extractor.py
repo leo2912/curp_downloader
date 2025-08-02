@@ -222,7 +222,7 @@ class CURPExtractorApp:
         instructions = ("Instrucciones:\n"
                        "1. Subir archivos: Haz clic en 'Subir archivos' para seleccionar imágenes (JPG, PNG, etc.) o archivos PDF.\n"
                        "2. Entrada manual: Escribe las CURPs directamente en el campo de entrada o utiliza la entrada masiva.\n"
-                       "3. La aplicación validará y mostrará todas las CURPs en la tabla de abajo.\n"
+                       "3. La aplicación validará y mostrará todas las CURPs en la tabla de arriba.\n"
                        "4. Usa las casillas de verificación para seleccionar CURPs, o haz clic derecho para acciones individuales.\n"
                        "5. Copia los códigos al portapapeles, descarga como CSV o descarga los PDFs oficiales.")
         
