@@ -741,8 +741,7 @@ class CURPExtractorApp:
             chrome_options.add_experimental_option("prefs", prefs)
             
             # Initialize WebDriver
-            #self.driver = webdriver.Chrome(options=chrome_options)
-            self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+            self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
             return self.driver
             
         except Exception as e:
@@ -894,8 +893,7 @@ def main():
         options = Options()
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
-        #test_driver = webdriver.Chrome(options=options)
-        test_driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+        test_driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
         test_driver.quit()
     except Exception as e:
         print("Advertencia: No se encontró ChromeDriver.")
