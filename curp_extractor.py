@@ -827,7 +827,8 @@ class CURPExtractorApp:
             self.driver.get("https://www.gob.mx/curp/")
             
             # Wait for page to load and find the input field
-            wait = WebDriverWait(self.driver, 10)
+            # Increased timeout to 30 seconds to allow manual captcha solving if needed
+            wait = WebDriverWait(self.driver, 30)
             curp_input = wait.until(EC.presence_of_element_located((By.ID, "curpinput")))
             
             # Clear and enter CURP
@@ -836,18 +837,24 @@ class CURPExtractorApp:
             
             # Find and click search button
             search_button = self.driver.find_element(By.ID, "searchButton")
-            search_button.click()
-            
-            # Wait for page to refresh and results to load
-            time.sleep(3)
+            # Using javascript click to avoid interception by cookie banners or recaptcha badges
+            self.driver.execute_script("arguments[0].click();", search_button)
             
             # Try to find and click download button
             try:
-                download_button = wait.until(EC.element_to_be_clickable((By.ID, "download")))
-                download_button.click()
+                # Use presence rather than clickable to avoid strict selenium visibility checks
+                download_button = wait.until(EC.presence_of_element_located((By.ID, "download")))
                 
-                # Wait for download to start
+                # Add slight delay since element might exist in DOM before being fully functional
                 time.sleep(2)
+                
+                # Ensure it's scrolled into view and click using JS
+                self.driver.execute_script("arguments[0].scrollIntoView(true);", download_button)
+                time.sleep(1)
+                self.driver.execute_script("arguments[0].click();", download_button)
+                
+                # Wait for download to start and complete (5 seconds)
+                time.sleep(5)
                 
                 return True
                 
