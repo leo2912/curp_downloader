@@ -207,24 +207,19 @@ class CURPExtractorApp:
         
         # Download PDFs button
         download_pdfs_btn = ttk.Button(actions_frame, text="Descargar CURP PDFs", command=self.download_curp_pdfs)
-        download_pdfs_btn.pack(side=tk.LEFT)
+        download_pdfs_btn.pack(side=tk.LEFT, padx=(0, 10))
         
-        # Instructions label
-        # instructions = ("Instructions:\n"
-        #                "1. Click 'Upload Files' to select images (JPG, PNG, etc.) or PDF files\n"
-        #                "2. The app will extract 18-character CURP codes after 'Clave:'\n"
-        #                "3. View results in the table below\n"
-        #                "4. Use checkboxes to select CURPs, or right-click for individual actions\n"
-        #                "5. Copy codes to clipboard, download as CSV, or download official PDFs")
-
-        # Instructions label
-
+        # Rename PDFs button
+        rename_pdfs_btn = ttk.Button(actions_frame, text="Renombrar PDFs de carpeta", command=self.rename_curp_pdfs)
+        rename_pdfs_btn.pack(side=tk.LEFT)
+        
         instructions = ("Instrucciones:\n"
                        "1. Subir archivos: Haz clic en 'Subir archivos' para seleccionar imágenes (JPG, PNG, etc.) o archivos PDF.\n"
                        "2. Entrada manual: Escribe las CURPs directamente en el campo de entrada o utiliza la entrada masiva.\n"
                        "3. La aplicación validará y mostrará todas las CURPs en la tabla de arriba.\n"
                        "4. Usa las casillas de verificación para seleccionar CURPs, o haz clic derecho para acciones individuales.\n"
-                       "5. Copia los códigos al portapapeles, descarga como CSV o descarga los PDFs oficiales.")
+                       "5. Copia los códigos al portapapeles, descarga como CSV o descarga los PDFs oficiales.\n"
+                       "6. Renombrar PDFs: Usa 'Renombrar PDFs de carpeta' para asignar a archivos tipo 'curp (10).pdf' el nombre 'CURP - NOMBRE.pdf'.")
         
         instructions_label = ttk.Label(main_frame, text=instructions, font=("Arial", 9), 
                                      foreground="gray", justify=tk.LEFT)
@@ -507,6 +502,179 @@ class CURPExtractorApp:
         except Exception as e:
             print(f"Error procesando PDF {pdf_path}: {e}")
             return None
+
+    def extract_curp_and_name_from_pdf(self, pdf_path):
+        """Extract CURP code and Person's Name from a PDF document"""
+        curp = None
+        name = None
+        try:
+            pdf_document = fitz.open(pdf_path)
+            curp_pattern = re.compile(r'^[A-Z]{4}[0-9]{6}[HMX][A-Z]{5}[A-Z0-9][0-9]$')
+            
+            for page_num in range(len(pdf_document)):
+                page = pdf_document[page_num]
+                words = page.get_text('words')
+                
+                if words:
+                    # Sort words vertically then horizontally
+                    words_sorted = sorted(words, key=lambda w: (w[1], w[0]))
+                    lines = []
+                    curr_line = []
+                    curr_y = None
+                    
+                    for w in words_sorted:
+                        if curr_y is None or abs(w[1] - curr_y) < 6:
+                            curr_line.append(w)
+                            curr_y = w[1]
+                        else:
+                            lines.append(' '.join(item[4] for item in sorted(curr_line, key=lambda x: x[0])))
+                            curr_line = [w]
+                            curr_y = w[1]
+                    if curr_line:
+                        lines.append(' '.join(item[4] for item in sorted(curr_line, key=lambda x: x[0])))
+                    
+                    for i, line in enumerate(lines):
+                        line_clean = line.strip()
+                        # Extract CURP
+                        if not curp:
+                            if 'Clave' in line_clean:
+                                for next_line in lines[i:i+4]:
+                                    for token in next_line.split():
+                                        clean_token = re.sub(r'[^A-Z0-9]', '', token.upper())
+                                        if curp_pattern.match(clean_token):
+                                            curp = clean_token
+                                            break
+                                    if curp: break
+                        
+                        # Extract Nombre
+                        if not name:
+                            if line_clean.startswith('Nombre') or line_clean == 'Nombre':
+                                for next_line in lines[i+1:i+4]:
+                                    nl = next_line.strip()
+                                    if nl and not any(k in nl for k in ['Clave', 'Entidad', 'CURP', 'Estado', 'Folio', 'Fecha']):
+                                        if re.match(r'^[A-ZÁÉÍÓÚÑ\s\.\-]+$', nl, re.IGNORECASE) and len(nl) > 3:
+                                            name = nl.upper()
+                                            break
+
+                # Fallback if position sorting didn't catch CURP
+                if not curp:
+                    text = page.get_text()
+                    match = re.search(r'[A-Z]{4}[0-9]{6}[HMX][A-Z]{5}[A-Z0-9][0-9]', text)
+                    if match:
+                        curp = match.group(0)
+
+                # Fallback if text extraction failed completely (scanned PDF image)
+                if not curp or not name:
+                    pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+                    img_data = pix.tobytes("png")
+                    from io import BytesIO
+                    image = Image.open(BytesIO(img_data))
+                    ocr_text = pytesseract.image_to_string(image, lang='spa+eng')
+                    
+                    if not curp:
+                        match = re.search(r'[A-Z]{4}[0-9]{6}[HMX][A-Z]{5}[A-Z0-9][0-9]', ocr_text)
+                        if match:
+                            curp = match.group(0)
+                    if not name:
+                        name_match = re.search(r'Nombre\s*[\:\#]?\s*([A-ZÁÉÍÓÚÑ\s]{5,40})', ocr_text, re.IGNORECASE)
+                        if name_match:
+                            candidate = name_match.group(1).strip()
+                            if not any(k in candidate.upper() for k in ['CURP', 'CLAVE', 'ENTIDAD', 'ESTADO']):
+                                name = candidate.upper()
+
+                if curp:
+                    break
+
+            pdf_document.close()
+        except Exception as e:
+            print(f"Error extrayendo información de {pdf_path}: {e}")
+
+        return curp, name
+
+    def rename_curp_pdfs(self):
+        """Ask user for folder containing CURP PDFs and rename them"""
+        folder_path = filedialog.askdirectory(title="Selecciona la carpeta con los PDFs de CURP a renombrar")
+        if not folder_path:
+            return
+
+        threading.Thread(target=self.rename_pdfs_worker, args=(folder_path,), daemon=True).start()
+
+    def rename_pdfs_worker(self, folder_path):
+        """Worker thread to rename CURP PDFs in selected folder"""
+        self.root.after(0, lambda: self.progress.start())
+        self.root.after(0, lambda: self.status_label.config(text="Buscando archivos PDF en la carpeta..."))
+
+        try:
+            pdf_files = [f for f in os.listdir(folder_path) if f.lower().endswith('.pdf')]
+            if not pdf_files:
+                self.root.after(0, lambda: self.progress.stop())
+                self.root.after(0, lambda: self.status_label.config(text="No se encontraron archivos PDF"))
+                self.root.after(0, lambda: messagebox.showinfo("Sin archivos", "No se encontraron archivos PDF en la carpeta seleccionada."))
+                return
+
+            renamed_count = 0
+            skipped_count = 0
+            failed_count = 0
+
+            for i, filename in enumerate(pdf_files):
+                file_path = os.path.join(folder_path, filename)
+                self.root.after(0, lambda f=filename, idx=i+1, total=len(pdf_files):
+                              self.status_label.config(text=f"Procesando {idx}/{total}: {f}"))
+
+                curp, name = self.extract_curp_and_name_from_pdf(file_path)
+
+                if curp:
+                    # Sanitize name for filename
+                    clean_name = ""
+                    if name:
+                        clean_name = re.sub(r'[\\/*?:"<>|]', '', name).strip()
+
+                    if clean_name:
+                        new_filename = f"{curp} - {clean_name}.pdf"
+                    else:
+                        new_filename = f"{curp}.pdf"
+
+                    # If filename is already correct, skip
+                    if filename.lower() == new_filename.lower():
+                        skipped_count += 1
+                        continue
+
+                    new_file_path = os.path.join(folder_path, new_filename)
+
+                    # Handle name collision
+                    counter = 1
+                    base_new, ext_new = os.path.splitext(new_filename)
+                    while os.path.exists(new_file_path) and new_file_path != file_path:
+                        new_filename = f"{base_new}_{counter}{ext_new}"
+                        new_file_path = os.path.join(folder_path, new_filename)
+                        counter += 1
+
+                    try:
+                        os.rename(file_path, new_file_path)
+                        renamed_count += 1
+                    except Exception as err:
+                        print(f"Error renombrando {filename} -> {new_filename}: {err}")
+                        failed_count += 1
+                else:
+                    failed_count += 1
+
+            self.root.after(0, lambda: self.progress.stop())
+            self.root.after(0, lambda: self.status_label.config(
+                text=f"Renombrado completo: {renamed_count} renombrados, {skipped_count} sin cambios, {failed_count} no procesados"))
+
+            self.root.after(0, lambda: messagebox.showinfo(
+                "Renombrado completo",
+                f"Proceso de renombrado finalizado:\n\n"
+                f"• Archivos renombrados: {renamed_count}\n"
+                f"• Archivos ya renombrados / sin cambios: {skipped_count}\n"
+                f"• Archivos sin CURP detectada / errores: {failed_count}\n\n"
+                f"Carpeta: {folder_path}"
+            ))
+
+        except Exception as e:
+            self.root.after(0, lambda: self.progress.stop())
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Ocurrió un error al procesar los archivos:\n{e}"))
+
     
     def find_curp_in_text(self, text):
         """Find CURP pattern in text"""
